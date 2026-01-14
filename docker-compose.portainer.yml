@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: FrontEnd/corporate-naukri/Dockerfile
+      args:
+        APP_DIR: FrontEnd/corporate-naukri
+    image: corporate-naukri-frontend:latest
+    ports:
+      - "4200:80"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Example backend service (uncomment and adjust if you have a backend Dockerfile)
+  # backend:
+  #   build:
+  #     context: .
+  #     dockerfile: BackEnd/Dockerfile
+  #   image: corporate-naukri-backend:latest
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NODE_ENV=production
+  #   networks:
+  #     - app-network
+  #   restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge

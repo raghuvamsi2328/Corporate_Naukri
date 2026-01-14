@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+*.log
+/.env
+/.firebase
+/.idea
+/.vscode
+coverage
+secrets
+npm-debug.log
+Dockerfile
