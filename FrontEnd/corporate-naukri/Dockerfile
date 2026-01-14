@@ -15,6 +15,8 @@ RUN npm ci --legacy-peer-deps
 # Copy project files and build production bundle
 COPY . .
 ENV CI=true
+# Increase Node's heap size during the Angular build to avoid OOM failures inside the container
+ENV NODE_OPTIONS=--max_old_space_size=4096
 RUN npm run build -- --configuration=production
 
 FROM nginx:stable
