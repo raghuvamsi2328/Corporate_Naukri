@@ -1,5 +1,6 @@
 # Multi-stage Dockerfile for building the Angular app and serving via nginx
 
+ARG APP_DIR=.
 FROM node:18-bullseye-slim AS build
 WORKDIR /app
 
@@ -9,12 +10,13 @@ RUN apt-get update \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Copy package files and install dependencies deterministically
-# Use repo-relative paths so build works even when the build context is the repo root
-COPY FrontEnd/corporate-naukri/package*.json ./
+# APP_DIR is a build-arg so this Dockerfile works whether the build context is
+# the frontend folder (default) or the repository root (set APP_DIR=FrontEnd/corporate-naukri)
+COPY ${APP_DIR}/package*.json ./
 RUN npm ci --legacy-peer-deps
 
 # Copy project files and build production bundle
-COPY FrontEnd/corporate-naukri/ ./
+COPY ${APP_DIR}/ ./
 ENV CI=true
 # Increase Node's heap size during the Angular build to avoid OOM failures inside the container
 ENV NODE_OPTIONS=--max_old_space_size=4096
