@@ -1,22 +1,28 @@
 # Multi-stage Dockerfile for building the Angular app and serving via nginx
 
-FROM node:18-alpine AS build
+FROM node:18-bullseye-slim AS build
 WORKDIR /app
 
-# Install build dependencies
-COPY package.json package-lock.json* ./
-RUN npm install --legacy-peer-deps
+# Install minimal build tools required by some native dependencies
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends git python3 build-essential ca-certificates \
+	&& rm -rf /var/lib/apt/lists/*
 
-# Copy source and build
+# Copy package files and install dependencies deterministically
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps
+
+# Copy project files and build production bundle
 COPY . .
+ENV CI=true
 RUN npm run build -- --configuration=production
 
-FROM nginx:stable-alpine
+FROM nginx:stable
 
 # Copy built site from the previous stage
 COPY --from=build /app/dist/corporate-naukri /usr/share/nginx/html
 
-# Optional: provide an nginx config for SPA routing
+# Provide the nginx config for SPA routing
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
