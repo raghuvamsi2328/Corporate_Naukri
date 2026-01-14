@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./FrontEnd/corporate-naukri
+      dockerfile: Dockerfile
+    image: corporate-naukri-frontend:latest
+    ports:
+      - "4200:80"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Example backend service (commented). If you add your backend service, Portainer can manage both together.
+  # backend:
+  #   build:
+  #     context: ./BackEnd
+  #   image: corporate-naukri-backend:latest
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NODE_ENV=production
+  #   networks:
+  #     - app-network
+
+networks:
+  app-network:
+    driver: bridge
