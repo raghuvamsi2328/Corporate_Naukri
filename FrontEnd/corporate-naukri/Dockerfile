@@ -9,11 +9,12 @@ RUN apt-get update \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Copy package files and install dependencies deterministically
-COPY package*.json ./
+# Use repo-relative paths so build works even when the build context is the repo root
+COPY FrontEnd/corporate-naukri/package*.json ./
 RUN npm ci --legacy-peer-deps
 
 # Copy project files and build production bundle
-COPY . .
+COPY FrontEnd/corporate-naukri/ ./
 ENV CI=true
 # Increase Node's heap size during the Angular build to avoid OOM failures inside the container
 ENV NODE_OPTIONS=--max_old_space_size=4096
