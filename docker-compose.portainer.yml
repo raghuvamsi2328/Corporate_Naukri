@@ -5,8 +5,6 @@ services:
     build:
       context: .
       dockerfile: FrontEnd/corporate-naukri/Dockerfile
-      args:
-        APP_DIR: FrontEnd/corporate-naukri
     image: corporate-naukri-frontend:latest
     ports:
       - "4200:80"
