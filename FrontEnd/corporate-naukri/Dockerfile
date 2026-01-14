@@ -13,20 +13,29 @@ RUN apt-get update \
 # APP_DIR is a build-arg so this Dockerfile works whether the build context is
 # the frontend folder (default) or the repository root (set APP_DIR=FrontEnd/corporate-naukri)
 COPY ${APP_DIR}/package*.json ./
-# Ensure devDependencies (like @angular/cli) are installed for the build
-ENV NODE_ENV=development
+
+# Install dependencies (includes devDependencies required for build)
 RUN npm ci --legacy-peer-deps
+
+# Debug: verify node_modules and @angular/cli are present
+RUN echo "=== Node and npm versions ===" \
+  && node -v && npm -v \
+  && echo "=== Checking @angular/cli ===" \
+  && ls -la node_modules/@angular/cli/bin/ || echo "WARNING: @angular/cli not found in node_modules" \
+  && echo "=== Angular CLI version ===" \
+  && npx ng version || echo "ng command not available"
 
 # Copy project files and build production bundle
 COPY ${APP_DIR}/ ./
+
+# Build Angular app using npm script (defined in package.json)
 ENV CI=true
-# Increase Node's heap size during the Angular build to avoid OOM failures inside the container
 ENV NODE_OPTIONS=--max_old_space_size=4096
-# Use npx to ensure the Angular CLI is available even if global ng is not installed.
-# This will prefer the local @angular/cli from node_modules, or fetch it if missing.
-RUN npx -y -p @angular/cli ng build --configuration=production
-# Set NODE_ENV back to production for the resulting image
-ENV NODE_ENV=production
+RUN echo "=== Starting Angular build ===" \
+  && npm run build -- --configuration=production
+
+RUN echo "=== Build completed, checking dist ===" \
+  && ls -la dist/
 
 FROM nginx:stable
 
