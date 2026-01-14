@@ -13,6 +13,8 @@ RUN apt-get update \
 # APP_DIR is a build-arg so this Dockerfile works whether the build context is
 # the frontend folder (default) or the repository root (set APP_DIR=FrontEnd/corporate-naukri)
 COPY ${APP_DIR}/package*.json ./
+# Ensure devDependencies (like @angular/cli) are installed for the build
+ENV NODE_ENV=development
 RUN npm ci --legacy-peer-deps
 
 # Copy project files and build production bundle
@@ -20,7 +22,11 @@ COPY ${APP_DIR}/ ./
 ENV CI=true
 # Increase Node's heap size during the Angular build to avoid OOM failures inside the container
 ENV NODE_OPTIONS=--max_old_space_size=4096
-RUN npm run build -- --configuration=production
+# Use npx to ensure the Angular CLI is available even if global ng is not installed.
+# This will prefer the local @angular/cli from node_modules, or fetch it if missing.
+RUN npx -y -p @angular/cli ng build --configuration=production
+# Set NODE_ENV back to production for the resulting image
+ENV NODE_ENV=production
 
 FROM nginx:stable
 
